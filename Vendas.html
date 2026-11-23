@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Controle de Vendas Diárias</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 84px;
+    }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 16px 18px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    header span {
+      font-size: 0.78rem;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .tab-section {
+      display: none;
+    }
+
+    .tab-section.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .section-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin: 0 0 12px 0;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.98rem;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row > * {
+      flex: 1;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 13px 16px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      transition: transform 0.08s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      font-size: 1.05rem;
+      padding: 15px;
+    }
+
+    .btn-outline {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-danger-soft {
+      background: var(--danger-light);
+      color: var(--danger);
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      width: auto;
+    }
+
+    .btn-small {
+      padding: 7px 11px;
+      font-size: 0.8rem;
+      width: auto;
+    }
+
+    /* Filtro de Categorias */
+    .cat-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      scrollbar-width: none;
+    }
+
+    .cat-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cat-pill {
+      border: 1.5px solid var(--border);
+      background: #fff;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .cat-pill.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Grade de Produtos */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      max-height: 270px;
+      overflow-y: auto;
+    }
+
+    .product-chip {
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+      background: #fff;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .product-chip.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .product-chip .cat-tag {
+      font-size: 0.66rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--accent);
+      letter-spacing: 0.03em;
+    }
+
+    .product-chip .name {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .product-chip .price-range {
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+
+    /* Botões de Tamanho Dinâmicos */
+    .size-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .size-btn {
+      border: 1.5px solid var(--border);
+      background: #fff;
+      border-radius: 11px;
+      padding: 10px 4px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .size-btn.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .size-btn strong {
+      font-size: 0.86rem;
+    }
+
+    .size-btn small {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .size-btn.selected small {
+      color: var(--accent);
+    }
+
+    /* Quantidade */
+    .qty-control {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg);
+      padding: 8px;
+      border-radius: 12px;
+    }
+
+    .qty-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      border: none;
+      background: #fff;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      cursor: pointer;
+    }
+
+    .qty-value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      min-width: 48px;
+      text-align: center;
+    }
+
+    /* Pagamento */
+    .pay-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .pay-btn {
+      border: 1.5px solid var(--border);
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 6px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pay-btn.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .pay-btn strong {
+      font-size: 0.9rem;
+    }
+
+    .pay-btn small {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    /* Taxas */
+    .fee-mode-box {
+      margin-top: 12px;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: 12px;
+    }
+
+    .mode-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .mode-btn {
+      border: 1.5px solid var(--border);
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .mode-btn.selected {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .summary-preview {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed #cbd5e1;
+      font-size: 0.86rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .summary-line.highlight {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--success);
+      margin-top: 4px;
+    }
+
+    /* Fechamento */
+    .kpi-hero {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .kpi-hero small {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .kpi-hero .big-val {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 4px 0 12px 0;
+      color: #4ade80;
+    }
+
+    .kpi-subgrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      font-size: 0.85rem;
+    }
+
+    .method-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .method-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .method-card small {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .method-card strong {
+      font-size: 0.95rem;
+      display: block;
+    }
+
+    .method-card span {
+      font-size: 0.72rem;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .size-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .size-pill {
+      font-size: 0.72rem;
+      background: var(--bg);
+      padding: 2px 7px;
+      border-radius: 6px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .badge-dinheiro { background: #dcfce7; color: #166534; }
+    .badge-debito { background: #dbeafe; color: #1e40af; }
+    .badge-credito { background: #fef3c7; color: #92400e; }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      height: 68px;
+      z-index: 30;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.04);
+    }
+
+    nav button {
+      border: none;
+      background: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    nav button.active {
+      color: var(--accent);
+    }
+
+    nav button svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 72px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 24px 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Controle de Vendas</h1>
+    <span id="header-date">Hoje</span>
+  </header>
+
+  <div id="toast" class="toast"></div>
+
+  <main>
+    <!-- ABA 1: VENDER -->
+    <section id="tab-vender" class="tab-section active">
+      <div class="card">
+        <p class="section-title">1. Selecione o Produto</p>
+        <div class="cat-bar" id="category-filter-bar">
+          <button type="button" class="cat-pill active" onclick="setCategoryFilter('TODOS', this)">Todos</button>
+          <button type="button" class="cat-pill" onclick="setCategoryFilter('Aromatizador', this)">Aromatizador</button>
+          <button type="button" class="cat-pill" onclick="setCategoryFilter('Difusor', this)">Difusores</button>
+          <button type="button" class="cat-pill" onclick="setCategoryFilter('Sabonete', this)">Sabonetes</button>
+          <button type="button" class="cat-pill" onclick="setCategoryFilter('Acessórios', this)">Acessórios</button>
+        </div>
+        <input type="text" id="search-sale-product" placeholder="Buscar produto ou aroma..." style="margin-bottom: 10px;" oninput="renderSaleProducts()" />
+        <div id="sale-product-grid" class="product-grid"></div>
+      </div>
+
+      <div class="card" id="sale-controls-card" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <strong id="selected-product-name" style="font-size: 1.05rem;">Produto</strong>
+            <div style="font-size: 0.82rem; color: var(--muted);">Opção: <strong id="selected-size-label">Único</strong> • Unitário: <span id="selected-product-unit">R$ 0,00</span></div>
+          </div>
+          <span class="badge" id="selected-base-total">Base: R$ 0,00</span>
+        </div>
+
+        <div id="size-selector-wrapper">
+          <label>2. Escolha o Tamanho</label>
+          <div class="size-grid" id="dynamic-size-grid"></div>
+        </div>
+
+        <label id="qty-step-label">3. Quantidade</label>
+        <div class="qty-control" style="margin-bottom: 14px;">
+          <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+          <span class="qty-value" id="sale-qty">1</span>
+          <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+
+        <label id="pay-step-label">4. Forma de Pagamento</label>
+        <div class="pay-grid">
+          <button type="button" class="pay-btn selected" id="pay-DINHEIRO" onclick="selectPayment('DINHEIRO')">
+            <strong>Dinheiro</strong>
+            <small id="rate-label-DINHEIRO">Taxa 0%</small>
+          </button>
+          <button type="button" class="pay-btn" id="pay-DEBITO" onclick="selectPayment('DEBITO')">
+            <strong>Débito</strong>
+            <small id="rate-label-DEBITO">Taxa 0%</small>
+          </button>
+          <button type="button" class="pay-btn" id="pay-CREDITO" onclick="selectPayment('CREDITO')">
+            <strong>Crédito</strong>
+            <small id="rate-label-CREDITO">Taxa 0%</small>
+          </button>
+        </div>
+
+        <div id="fee-mode-container" class="fee-mode-box" style="display: none;">
+          <div style="font-size: 0.82rem; font-weight: 700;">Como tratar a taxa desta venda?</div>
+          <div class="mode-toggle">
+            <button type="button" class="mode-btn selected" id="mode-ABSORVER" onclick="selectFeeMode('ABSORVER')">Absorver Taxa</button>
+            <button type="button" class="mode-btn" id="mode-REPASSAR" onclick="selectFeeMode('REPASSAR')">Repassar ao Cliente</button>
+          </div>
+        </div>
+
+        <div class="summary-preview">
+          <div class="summary-line">
+            <span>Cobrar do cliente (Bruto):</span>
+            <strong id="calc-gross">R$ 0,00</strong>
+          </div>
+          <div class="summary-line">
+            <span id="calc-fee-label">Taxa maquininha (0%):</span>
+            <span id="calc-fee" style="color: var(--danger);">R$ 0,00</span>
+          </div>
+          <div class="summary-line highlight">
+            <span>Seu Líquido Real:</span>
+            <span id="calc-net">R$ 0,00</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-success" style="margin-top: 14px;" onclick="registerSale()">
+          Registrar Venda
+        </button>
+      </div>
+    </section>
+
+    <!-- ABA 2: PRODUTOS & TABELA DE PREÇOS -->
+    <section id="tab-produtos" class="tab-section">
+      <div class="card">
+        <p class="section-title">Tabela Padrão — Aromatizadores (65ml, 250ml, 500ml, Litro)</p>
+        <p style="font-size: 0.82rem; color: var(--muted); margin-top: 0; margin-bottom: 10px;">
+          Preencha os tamanhos abaixo para atualizar todas as 16 fragrâncias de Aromatizador de uma só vez.
+        </p>
+        <div class="grid-2" style="margin-bottom: 12px;">
+          <div>
+            <label for="bulk-65ml">65ml (R$)</label>
+            <input type="text" id="bulk-65ml" inputmode="decimal" placeholder="Ex: 15,00" />
+          </div>
+          <div>
+            <label for="bulk-250ml">250ml (R$)</label>
+            <input type="text" id="bulk-250ml" inputmode="decimal" placeholder="Ex: 35,00" />
+          </div>
+          <div>
+            <label for="bulk-500ml">500ml (R$)</label>
+            <input type="text" id="bulk-500ml" inputmode="decimal" placeholder="Ex: 55,00" />
+          </div>
+          <div>
+            <label for="bulk-Litro">Litro (R$)</label>
+            <input type="text" id="bulk-Litro" inputmode="decimal" placeholder="Ex: 90,00" />
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="applyBulkPrices()">Aplicar Preços nos Aromatizadores</button>
+      </div>
+
+      <div class="card">
+        <p class="section-title" id="product-form-title">Cadastrar / Editar Produto</p>
+        <input type="hidden" id="edit-product-id" />
+        <div class="grid-2" style="margin-bottom: 10px;">
+          <div>
+            <label for="prod-name">Nome do Produto</label>
+            <input type="text" id="prod-name" placeholder="Ex: Aromatizador Di Casa" />
+          </div>
+          <div>
+            <label for="prod-category">Categoria</label>
+            <select id="prod-category">
+              <option value="Aromatizador">Aromatizador</option>
+              <option value="Difusor">Difusor</option>
+              <option value="Sabonete">Sabonete</option>
+              <option value="Acessórios">Acessórios</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <label for="prod-size-type">Tipo de Tamanho</label>
+          <select id="prod-size-type" onchange="toggleFormSizeInputs()">
+            <option value="AGUA_4">65ml, 250ml, 500ml e Litro (Aromatizador)</option>
+            <option value="60_250">60ml e 250ml (Difusor, Sabonete)</option>
+            <option value="UNICO">Tamanho Único (Kit Varetas, Bandeja)</option>
+          </select>
+        </div>
+
+        <div id="form-inputs-UNICO" style="margin-bottom: 12px; display: none;">
+          <label for="prod-Unico">Valor Unitário (R$)</label>
+          <input type="text" id="prod-Unico" inputmode="decimal" placeholder="0,00" />
+        </div>
+
+        <div id="form-inputs-60_250" class="grid-2" style="margin-bottom: 12px; display: none;">
+          <div>
+            <label for="prod-60ml">60ml (R$)</label>
+            <input type="text" id="prod-60ml" inputmode="decimal" placeholder="0,00" />
+          </div>
+          <div>
+            <label for="prod-250ml-small">250ml (R$)</label>
+            <input type="text" id="prod-250ml-small" inputmode="decimal" placeholder="0,00" />
+          </div>
+        </div>
+
+        <div id="form-inputs-AGUA_4" class="grid-2" style="margin-bottom: 12px;">
+          <div>
+            <label for="prod-65ml">65ml (R$)</label>
+            <input type="text" id="prod-65ml" inputmode="decimal" placeholder="0,00" />
+          </div>
+          <div>
+            <label for="prod-250ml">250ml (R$)</label>
+            <input type="text" id="prod-250ml" inputmode="decimal" placeholder="0,00" />
+          </div>
+          <div>
+            <label for="prod-500ml">500ml (R$)</label>
+            <input type="text" id="prod-500ml" inputmode="decimal" placeholder="0,00" />
+          </div>
+          <div>
+            <label for="prod-Litro">Litro (R$)</label>
+            <input type="text" id="prod-Litro" inputmode="decimal" placeholder="0,00" />
+          </div>
+        </div>
+
+        <div class="row">
+          <button type="button" class="btn btn-primary" onclick="saveProduct()">Salvar Produto</button>
+          <button type="button" class="btn btn-outline" id="cancel-edit-btn" style="display: none;" onclick="resetProductForm()">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="section-title">Produtos Cadastrados (<span id="prod-count">0</span>)</p>
+        <div id="products-list"></div>
+      </div>
+    </section>
+
+    <!-- ABA 3: FECHAMENTO DIÁRIO -->
+    <section id="tab-fechamento" class="tab-section">
+      <div class="card" style="padding: 12px 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+          <label for="report-date" style="margin: 0;">Data do Caixa:</label>
+          <input type="date" id="report-date" style="width: auto;" onchange="renderReport()" />
+        </div>
+      </div>
+
+      <div class="kpi-hero">
+        <small>Líquido Real (Seu Caixa)</small>
+        <div class="big-val" id="rep-net-total">R$ 0,00</div>
+        <div class="kpi-subgrid">
+          <div>
+            <small>Total Cobrado (Bruto)</small>
+            <div style="font-weight: 700; font-size: 1rem;" id="rep-gross-total">R$ 0,00</div>
+          </div>
+          <div>
+            <small>Taxas Retidas</small>
+            <div style="font-weight: 700; font-size: 1rem; color: #fca5a5;" id="rep-fee-total">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="method-cards">
+        <div class="method-card">
+          <small>Dinheiro</small>
+          <strong id="rep-gross-DINHEIRO">R$ 0,00</strong>
+          <span id="rep-net-DINHEIRO">Líq: R$ 0,00</span>
+        </div>
+        <div class="method-card">
+          <small>Débito</small>
+          <strong id="rep-gross-DEBITO">R$ 0,00</strong>
+          <span id="rep-net-DEBITO">Líq: R$ 0,00</span>
+        </div>
+        <div class="method-card">
+          <small>Crédito</small>
+          <strong id="rep-gross-CREDITO">R$ 0,00</strong>
+          <span id="rep-net-CREDITO">Líq: R$ 0,00</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="section-title">Exportar Relatório</p>
+        <div class="row">
+          <button type="button" class="btn btn-primary" onclick="copyWhatsAppReport()">Copiar p/ WhatsApp</button>
+          <button type="button" class="btn btn-outline" onclick="exportCSV()">Baixar Planilha CSV</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="section-title">Vendas do Dia (<span id="rep-sales-count">0</span>)</p>
+        <div id="sales-history-list"></div>
+      </div>
+    </section>
+
+    <!-- ABA 4: TAXAS & BACKUP -->
+    <section id="tab-taxas" class="tab-section">
+      <div class="card">
+        <p class="section-title">Taxas da Maquininha (%)</p>
+        <div style="margin-bottom: 10px;">
+          <label for="fee-DINHEIRO">Taxa no Dinheiro (%)</label>
+          <input type="text" id="fee-DINHEIRO" inputmode="decimal" />
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label for="fee-DEBITO">Taxa no Débito (%)</label>
+          <input type="text" id="fee-DEBITO" inputmode="decimal" />
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label for="fee-CREDITO">Taxa no Crédito (%)</label>
+          <input type="text" id="fee-CREDITO" inputmode="decimal" />
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label for="default-fee-mode">Padrão ao selecionar cartão</label>
+          <select id="default-fee-mode">
+            <option value="ABSORVER">Absorver Taxa (desconta do meu lucro)</option>
+            <option value="REPASSAR">Repassar ao Cliente (acrescenta no valor)</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="saveFeeSettings()">Salvar Configurações</button>
+      </div>
+
+      <div class="card">
+        <p class="section-title">Segurança e Backup no Aparelho</p>
+        <p style="font-size: 0.85rem; color: var(--muted); margin-top: 0;">
+          Exporte um backup regularmente para guardar seus preços e vendas no WhatsApp ou Google Drive.
+        </p>
+        <div class="row">
+          <button type="button" class="btn btn-outline" onclick="exportBackupJSON()">Salvar Backup</button>
+          <button type="button" class="btn btn-outline" onclick="document.getElementById('import-file').click()">Restaurar Backup</button>
+          <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importBackupJSON(event)" />
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav>
+    <button type="button" id="nav-vender" class="active" onclick="switchTab('vender')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+      Vender
+    </button>
+    <button type="button" id="nav-produtos" onclick="switchTab('produtos')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      Produtos
+    </button>
+    <button type="button" id="nav-fechamento" onclick="switchTab('fechamento')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Fechamento
+    </button>
+    <button type="button" id="nav-taxas" onclick="switchTab('taxas')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Taxas
+    </button>
+  </nav>
+
+  <script>
+    const STORAGE_KEYS = {
+      PRODUCTS: 'pdv_catalogo_sem_agua_products_v4',
+      SALES: 'pdv_catalogo_sem_agua_sales_v4',
+      SETTINGS: 'pdv_catalogo_sem_agua_settings_v4'
+    };
+
+    const AROMATIZADOR_FRAGRANCES = [
+      'Di Casa',
+      'Alecrim',
+      'Algodão',
+      'Bamboo',
+      'Brisa',
+      'Chá Branco',
+      'Chá Verde',
+      'Carro Novo',
+      'Estilo',
+      'Marine',
+      'Orquídea',
+      'Primavera',
+      'Sweet Baby',
+      'Vanilla',
+      'Verbena',
+      'Vila Rica'
+    ];
+
+    let memoryStore = {};
+
+    function readStore(key, fallback) {
+      try {
+        const raw = window.localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (e) {
+        return memoryStore[key] !== undefined ? memoryStore[key] : fallback;
+      }
+    }
+
+    function writeStore(key, value) {
+      memoryStore[key] = value;
+      try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+      } catch (e) {}
+    }
+
+    function parseMoneyInput(rawValue) {
+      if (typeof rawValue === 'number') return rawValue;
+      const cleaned = String(rawValue || '')
+        .replace(/R\$/gi, '')
+        .replace(/\s+/g, '')
+        .replace(',', '.');
+      const parsed = parseFloat(cleaned);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    function createInitialCatalog() {
+      const list = [];
+
+      // Aromatizadores (16 fragrâncias)
+      AROMATIZADOR_FRAGRANCES.forEach((name, index) => {
+        list.push({
+          id: 'arom_' + (index + 1),
+          name: 'Aromatizador ' + name,
+          category: 'Aromatizador',
+          prices: { '65ml': 0, '250ml': 0, '500ml': 0, 'Litro': 0 },
+          active: true
+        });
+      });
+
+      // Difusor, Sabonete e Acessórios
+      list.push({
+        id: 'prod_difusor',
+        name: 'Difusor de Varetas',
+        category: 'Difusor',
+        prices: { '60ml': 0, '250ml': 0 },
+        active: true
+      });
+
+      list.push({
+        id: 'prod_sabonete',
+        name: 'Sabonete Líquido',
+        category: 'Sabonete',
+        prices: { '60ml': 0, '250ml': 0 },
+        active: true
+      });
+
+      list.push({
+        id: 'prod_kit_varetas',
+        name: 'Kit Varetas',
+        category: 'Acessórios',
+        prices: { 'Único': 0 },
+        active: true
+      });
+
+      list.push({
+        id: 'prod_bandeja',
+        name: 'Bandeja',
+        category: 'Acessórios',
+        prices: { 'Único': 0 },
+        active: true
+      });
+
+      return list;
+    }
+
+    // Preserva preços já cadastrados na versão anterior ao remover Água Perfumada
+    function migrateOrLoadCatalog() {
+      let current = readStore(STORAGE_KEYS.PRODUCTS, null);
+      if (current && Array.isArray(current) && current.length > 0) {
+        return current;
+      }
+
+      const initial = createInitialCatalog();
+      const prevV3 = readStore('pdv_catalogo_completo_products_v3', null);
+      if (prevV3 && Array.isArray(prevV3)) {
+        const prevMap = new Map(prevV3.map(item => [item.name, item]));
+        initial.forEach(item => {
+          if (prevMap.has(item.name)) {
+            item.prices = prevMap.get(item.name).prices;
+            item.active = prevMap.get(item.name).active;
+          }
+        });
+      }
+
+      writeStore(STORAGE_KEYS.PRODUCTS, initial);
+      return initial;
+    }
+
+    let products = migrateOrLoadCatalog();
+    let sales = readStore(STORAGE_KEYS.SALES, readStore('pdv_catalogo_completo_sales_v3', []));
+    let settings = readStore(STORAGE_KEYS.SETTINGS, readStore('pdv_catalogo_completo_settings_v3', {
+      rates: { DINHEIRO: 0, DEBITO: 1.99, CREDITO: 4.99 },
+      defaultMode: 'ABSORVER'
+    }));
+
+    let currentCategoryFilter = 'TODOS';
+    let selectedProductId = null;
+    let selectedSize = null;
+    let currentQty = 1;
+    let currentPayment = 'DINHEIRO';
+    let currentFeeMode = settings.defaultMode || 'ABSORVER';
+
+    function formatBRL(value) {
+      return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function getLocalDateISO(dateObj = new Date()) {
+      const tzOffset = dateObj.getTimezoneOffset() * 60000;
+      return new Date(dateObj - tzOffset).toISOString().split('T')[0];
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2700);
+    }
+
+    function saveData() {
+      writeStore(STORAGE_KEYS.PRODUCTS, products);
+      writeStore(STORAGE_KEYS.SALES, sales);
+      writeStore(STORAGE_KEYS.SETTINGS, settings);
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabName).classList.add('active');
+      document.getElementById('nav-' + tabName).classList.add('active');
+
+      if (tabName === 'vender') {
+        updatePaymentRateLabels();
+        renderSaleProducts();
+      } else if (tabName === 'produtos') {
+        renderProductsList();
+      } else if (tabName === 'fechamento') {
+        renderReport();
+      } else if (tabName === 'taxas') {
+        loadFeeSettingsUI();
+      }
+    }
+
+    /* ================= PRODUTOS & PREÇOS ================= */
+    function toggleFormSizeInputs() {
+      const type = document.getElementById('prod-size-type').value;
+      document.getElementById('form-inputs-UNICO').style.display = type === 'UNICO' ? 'block' : 'none';
+      document.getElementById('form-inputs-60_250').style.display = type === '60_250' ? 'grid' : 'none';
+      document.getElementById('form-inputs-AGUA_4').style.display = type === 'AGUA_4' ? 'grid' : 'none';
+    }
+
+    function applyBulkPrices() {
+      const p65 = parseMoneyInput(document.getElementById('bulk-65ml').value);
+      const p250 = parseMoneyInput(document.getElementById('bulk-250ml').value);
+      const p500 = parseMoneyInput(document.getElementById('bulk-500ml').value);
+      const pLitro = parseMoneyInput(document.getElementById('bulk-Litro').value);
+
+      if (p65 <= 0 && p250 <= 0 && p500 <= 0 && pLitro <= 0) {
+        showToast('Preencha pelo menos um tamanho para aplicar');
+        return;
+      }
+
+      products.forEach(prod => {
+        if (prod.category === 'Aromatizador' && prod.prices['65ml'] !== undefined) {
+          if (p65 > 0) prod.prices['65ml'] = p65;
+          if (p250 > 0) prod.prices['250ml'] = p250;
+          if (p500 > 0) prod.prices['500ml'] = p500;
+          if (pLitro > 0) prod.prices['Litro'] = pLitro;
+        }
+      });
+
+      saveData();
+      renderProductsList();
+      showToast('Preços atualizados para todos os Aromatizadores!');
+    }
+
+    function saveProduct() {
+      const id = document.getElementById('edit-product-id').value;
+      const name = document.getElementById('prod-name').value.trim();
+      const category = document.getElementById('prod-category').value;
+      const sizeType = document.getElementById('prod-size-type').value;
+
+      if (!name) {
+        showToast('Informe o nome do produto');
+        return;
+      }
+
+      let prices = {};
+      if (sizeType === 'UNICO') {
+        prices = { 'Único': parseMoneyInput(document.getElementById('prod-Unico').value) };
+      } else if (sizeType === '60_250') {
+        prices = {
+          '60ml': parseMoneyInput(document.getElementById('prod-60ml').value),
+          '250ml': parseMoneyInput(document.getElementById('prod-250ml-small').value)
+        };
+      } else {
+        prices = {
+          '65ml': parseMoneyInput(document.getElementById('prod-65ml').value),
+          '250ml': parseMoneyInput(document.getElementById('prod-250ml').value),
+          '500ml': parseMoneyInput(document.getElementById('prod-500ml').value),
+          'Litro': parseMoneyInput(document.getElementById('prod-Litro').value)
+        };
+      }
+
+      if (id) {
+        const idx = products.findIndex(p => p.id === id);
+        if (idx !== -1) {
+          products[idx].name = name;
+          products[idx].category = category;
+          products[idx].prices = prices;
+        }
+        showToast('Produto atualizado!');
+      } else {
+        products.unshift({
+          id: 'prod_' + Date.now(),
+          name,
+          category,
+          prices,
+          active: true
+        });
+        showToast('Produto cadastrado!');
+      }
+
+      saveData();
+      resetProductForm();
+      renderProductsList();
+    }
+
+    function editProduct(id) {
+      const prod = products.find(p => p.id === id);
+      if (!prod) return;
+      document.getElementById('edit-product-id').value = prod.id;
+      document.getElementById('prod-name').value = prod.name;
+      document.getElementById('prod-category').value = prod.category || 'Acessórios';
+
+      const keys = Object.keys(prod.prices);
+      if (keys.includes('65ml')) {
+        document.getElementById('prod-size-type').value = 'AGUA_4';
+        toggleFormSizeInputs();
+        document.getElementById('prod-65ml').value = prod.prices['65ml'] ? String(prod.prices['65ml']).replace('.', ',') : '';
+        document.getElementById('prod-250ml').value = prod.prices['250ml'] ? String(prod.prices['250ml']).replace('.', ',') : '';
+        document.getElementById('prod-500ml').value = prod.prices['500ml'] ? String(prod.prices['500ml']).replace('.', ',') : '';
+        document.getElementById('prod-Litro').value = prod.prices['Litro'] ? String(prod.prices['Litro']).replace('.', ',') : '';
+      } else if (keys.includes('60ml')) {
+        document.getElementById('prod-size-type').value = '60_250';
+        toggleFormSizeInputs();
+        document.getElementById('prod-60ml').value = prod.prices['60ml'] ? String(prod.prices['60ml']).replace('.', ',') : '';
+        document.getElementById('prod-250ml-small').value = prod.prices['250ml'] ? String(prod.prices['250ml']).replace('.', ',') : '';
+      } else {
+        document.getElementById('prod-size-type').value = 'UNICO';
+        toggleFormSizeInputs();
+        document.getElementById('prod-Unico').value = prod.prices['Único'] ? String(prod.prices['Único']).replace('.', ',') : '';
+      }
+
+      document.getElementById('product-form-title').textContent = 'Editar Produto';
+      document.getElementById('cancel-edit-btn').style.display = 'inline-flex';
+      document.getElementById('product-form-title').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function toggleProductActive(id) {
+      const prod = products.find(p => p.id === id);
+      if (!prod) return;
+      prod.active = !prod.active;
+      saveData();
+      renderProductsList();
+      showToast(prod.active ? 'Produto ativado' : 'Produto ocultado');
+    }
+
+    function resetProductForm() {
+      document.getElementById('edit-product-id').value = '';
+      document.getElementById('prod-name').value = '';
+      document.getElementById('prod-Unico').value = '';
+      document.getElementById('prod-60ml').value = '';
+      document.getElementById('prod-250ml-small').value = '';
+      document.getElementById('prod-65ml').value = '';
+      document.getElementById('prod-250ml').value = '';
+      document.getElementById('prod-500ml').value = '';
+      document.getElementById('prod-Litro').value = '';
+      document.getElementById('product-form-title').textContent = 'Cadastrar / Editar Produto';
+      document.getElementById('cancel-edit-btn').style.display = 'none';
+    }
+
+    function renderProductsList() {
+      const list = document.getElementById('products-list');
+      document.getElementById('prod-count').textContent = products.length;
+
+      list.innerHTML = products.map(p => {
+        const pills = Object.entries(p.prices)
+          .map(([size, val]) => `<span class="size-pill">${size === 'Único' ? 'Valor' : size}: ${formatBRL(val)}</span>`)
+          .join('');
+
+        return `
+          <div class="list-item" style="opacity: ${p.active ? '1' : '0.5'}">
+            <div style="flex: 1;">
+              <div style="font-size: 0.72rem; color: var(--accent); font-weight: 700; text-transform: uppercase;">${p.category || 'Produto'}</div>
+              <strong>${p.name}</strong> ${!p.active ? '<small>(Oculto)</small>' : ''}
+              <div class="size-pills">${pills}</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <button type="button" class="btn btn-outline btn-small" onclick="editProduct('${p.id}')">Editar</button>
+              <button type="button" class="btn btn-outline btn-small" onclick="toggleProductActive('${p.id}')">${p.active ? 'Ocultar' : 'Ativar'}</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* ================= VENDER ================= */
+    function setCategoryFilter(category, btnEl) {
+      currentCategoryFilter = category;
+      document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      renderSaleProducts();
+    }
+
+    function updatePaymentRateLabels() {
+      document.getElementById('rate-label-DINHEIRO').textContent = `Taxa ${settings.rates.DINHEIRO}%`;
+      document.getElementById('rate-label-DEBITO').textContent = `Taxa ${settings.rates.DEBITO}%`;
+      document.getElementById('rate-label-CREDITO').textContent = `Taxa ${settings.rates.CREDITO}%`;
+    }
+
+    function renderSaleProducts() {
+      const grid = document.getElementById('sale-product-grid');
+      const query = document.getElementById('search-sale-product').value.toLowerCase();
+
+      const activeProducts = products.filter(p => {
+        if (!p.active) return false;
+        if (currentCategoryFilter !== 'TODOS' && p.category !== currentCategoryFilter) return false;
+        return p.name.toLowerCase().includes(query) || (p.category || '').toLowerCase().includes(query);
+      });
+
+      if (activeProducts.length === 0) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;">Nenhum produto encontrado nesta categoria.</div>';
+        return;
+      }
+
+      grid.innerHTML = activeProducts.map(p => {
+        const vals = Object.values(p.prices).map(v => Number(v || 0)).filter(v => v > 0);
+        const minVal = vals.length ? Math.min(...vals) : 0;
+        const maxVal = vals.length ? Math.max(...vals) : 0;
+        const priceInfo = minVal > 0
+          ? (minVal === maxVal ? formatBRL(minVal) : `${formatBRL(minVal)} a ${formatBRL(maxVal)}`)
+          : 'Definir preço em Produtos';
+
+        const displayName = p.category === 'Aromatizador'
+          ? p.name.replace('Aromatizador ', '')
+          : p.name;
+
+        return `
+          <button type="button" class="product-chip ${selectedProductId === p.id ? 'selected' : ''}" onclick="selectProductForSale('${p.id}')">
+            <span class="cat-tag">${p.category}</span>
+            <span class="name">${displayName}</span>
+            <span class="price-range">${priceInfo}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectProductForSale(id) {
+      const prod = products.find(p => p.id === id);
+      if (!prod) return;
+
+      selectedProductId = id;
+      currentQty = 1;
+      currentFeeMode = settings.defaultMode || 'ABSORVER';
+      document.getElementById('sale-qty').textContent = currentQty;
+      document.getElementById('sale-controls-card').style.display = 'block';
+
+      const availableSizes = Object.keys(prod.prices);
+      selectedSize = availableSizes[0];
+
+      const sizeWrapper = document.getElementById('size-selector-wrapper');
+      const sizeGrid = document.getElementById('dynamic-size-grid');
+
+      if (availableSizes.length === 1 && availableSizes[0] === 'Único') {
+        sizeWrapper.style.display = 'none';
+        document.getElementById('qty-step-label').textContent = '2. Quantidade';
+        document.getElementById('pay-step-label').textContent = '3. Forma de Pagamento';
+      } else {
+        sizeWrapper.style.display = 'block';
+        document.getElementById('qty-step-label').textContent = '3. Quantidade';
+        document.getElementById('pay-step-label').textContent = '4. Forma de Pagamento';
+
+        sizeGrid.innerHTML = availableSizes.map(size => `
+          <button type="button" class="size-btn ${selectedSize === size ? 'selected' : ''}" id="dyn-size-${size}" onclick="selectSize('${size}')">
+            <strong>${size}</strong>
+            <small>${formatBRL(prod.prices[size] || 0)}</small>
+          </button>
+        `).join('');
+      }
+
+      selectFeeMode(currentFeeMode, false);
+      renderSaleProducts();
+      updateSaleCalculation();
+      document.getElementById('sale-controls-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function selectSize(size) {
+      selectedSize = size;
+      document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+      const btn = document.getElementById('dyn-size-' + size);
+      if (btn) btn.classList.add('selected');
+      updateSaleCalculation();
+    }
+
+    function changeQty(delta) {
+      currentQty = Math.max(1, currentQty + delta);
+      document.getElementById('sale-qty').textContent = currentQty;
+      updateSaleCalculation();
+    }
+
+    function selectPayment(method) {
+      currentPayment = method;
+      document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('selected'));
+      document.getElementById('pay-' + method).classList.add('selected');
+
+      const rate = Number(settings.rates[method] || 0);
+      const feeBox = document.getElementById('fee-mode-container');
+      if (rate > 0) {
+        feeBox.style.display = 'block';
+        selectFeeMode(settings.defaultMode || 'ABSORVER', false);
+      } else {
+        feeBox.style.display = 'none';
+      }
+      updateSaleCalculation();
+    }
+
+    function selectFeeMode(mode, recalculate = true) {
+      currentFeeMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+      document.getElementById('mode-' + mode).classList.add('selected');
+      if (recalculate) updateSaleCalculation();
+    }
+
+    function calculateTotals(baseTotal, ratePercent, feeMode) {
+      if (ratePercent <= 0) {
+        return { gross: baseTotal, feeAmount: 0, net: baseTotal };
+      }
+      if (feeMode === 'REPASSAR') {
+        const feeAmount = baseTotal * (ratePercent / 100);
+        const gross = baseTotal + feeAmount;
+        return { gross, feeAmount, net: baseTotal };
+      } else {
+        const feeAmount = baseTotal * (ratePercent / 100);
+        const net = baseTotal - feeAmount;
+        return { gross: baseTotal, feeAmount, net };
+      }
+    }
+
+    function updateSaleCalculation() {
+      const prod = products.find(p => p.id === selectedProductId);
+      if (!prod || !selectedSize) return;
+
+      const unitPrice = Number(prod.prices[selectedSize] || 0);
+      const baseTotal = unitPrice * currentQty;
+      const rate = Number(settings.rates[currentPayment] || 0);
+      const { gross, feeAmount, net } = calculateTotals(baseTotal, rate, currentFeeMode);
+
+      document.getElementById('selected-product-name').textContent = prod.name;
+      document.getElementById('selected-size-label').textContent = selectedSize;
+      document.getElementById('selected-product-unit').textContent = formatBRL(unitPrice);
+      document.getElementById('selected-base-total').textContent = `Base: ${formatBRL(baseTotal)}`;
+
+      document.getElementById('calc-gross').textContent = formatBRL(gross);
+      document.getElementById('calc-fee-label').textContent = `Taxa maquininha (${rate}% - ${rate > 0 ? (currentFeeMode === 'REPASSAR' ? 'Repassada' : 'Absorvida') : 'Isento'}):`;
+      document.getElementById('calc-fee').textContent = formatBRL(feeAmount);
+      document.getElementById('calc-net').textContent = formatBRL(net);
+    }
+
+    function registerSale() {
+      const prod = products.find(p => p.id === selectedProductId);
+      if (!prod || !selectedSize) return;
+
+      const unitPrice = Number(prod.prices[selectedSize] || 0);
+      if (unitPrice <= 0) {
+        showToast(`Cadastre o valor (${selectedSize}) na aba Produtos`);
+        return;
+      }
+
+      const now = new Date();
+      const baseTotal = unitPrice * currentQty;
+      const rate = Number(settings.rates[currentPayment] || 0);
+      const effectiveMode = rate > 0 ? currentFeeMode : 'ISENTO';
+      const { gross, feeAmount, net } = calculateTotals(baseTotal, rate, currentFeeMode);
+
+      const labelSize = selectedSize === 'Único' ? '' : ` (${selectedSize})`;
+
+      sales.unshift({
+        id: 'sale_' + Date.now(),
+        date: getLocalDateISO(now),
+        time: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        productName: `${prod.name}${labelSize}`,
+        size: selectedSize,
+        unitPrice: unitPrice,
+        qty: currentQty,
+        payment: currentPayment,
+        ratePercent: rate,
+        feeMode: effectiveMode,
+        grossTotal: Number(gross.toFixed(2)),
+        feeAmount: Number(feeAmount.toFixed(2)),
+        netTotal: Number(net.toFixed(2))
+      });
+
+      saveData();
+      showToast('Venda registrada com sucesso!');
+
+      currentQty = 1;
+      document.getElementById('sale-qty').textContent = 1;
+      updateSaleCalculation();
+    }
+
+    /* ================= FECHAMENTO ================= */
+    function renderReport() {
+      const dateInput = document.getElementById('report-date');
+      if (!dateInput.value) dateInput.value = getLocalDateISO();
+      const targetDate = dateInput.value;
+
+      const daySales = sales.filter(s => s.date === targetDate);
+
+      let grossTotal = 0, feeTotal = 0, netTotal = 0;
+      const byMethod = {
+        DINHEIRO: { gross: 0, net: 0 },
+        DEBITO: { gross: 0, net: 0 },
+        CREDITO: { gross: 0, net: 0 }
+      };
+
+      daySales.forEach(s => {
+        grossTotal += s.grossTotal;
+        feeTotal += s.feeAmount;
+        netTotal += s.netTotal;
+        if (byMethod[s.payment]) {
+          byMethod[s.payment].gross += s.grossTotal;
+          byMethod[s.payment].net += s.netTotal;
+        }
+      });
+
+      document.getElementById('rep-net-total').textContent = formatBRL(netTotal);
+      document.getElementById('rep-gross-total').textContent = formatBRL(grossTotal);
+      document.getElementById('rep-fee-total').textContent = formatBRL(feeTotal);
+
+      ['DINHEIRO', 'DEBITO', 'CREDITO'].forEach(m => {
+        document.getElementById('rep-gross-' + m).textContent = formatBRL(byMethod[m].gross);
+        document.getElementById('rep-net-' + m).textContent = 'Líq: ' + formatBRL(byMethod[m].net);
+      });
+
+      document.getElementById('rep-sales-count').textContent = daySales.length;
+      const historyEl = document.getElementById('sales-history-list');
+
+      if (daySales.length === 0) {
+        historyEl.innerHTML = '<div class="empty-state">Nenhuma venda registrada nesta data.</div>';
+        return;
+      }
+
+      historyEl.innerHTML = daySales.map(s => `
+        <div class="list-item">
+          <div>
+            <div><strong>${s.qty}x ${s.productName}</strong> <span class="badge badge-${s.payment.toLowerCase()}">${s.payment}</span></div>
+            <div style="font-size: 0.78rem; color: var(--muted); margin-top: 2px;">
+              ${s.time} • Cobrado: ${formatBRL(s.grossTotal)} ${s.feeAmount > 0 ? `(Taxa: -${formatBRL(s.feeAmount)} | ${s.feeMode})` : ''}
+            </div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--success);">Líquido: ${formatBRL(s.netTotal)}</div>
+          </div>
+          <button type="button" class="btn btn-danger-soft" onclick="deleteSale('${s.id}')">Estornar</button>
+        </div>
+      `).join('');
+    }
+
+    function deleteSale(id) {
+      if (!confirm('Deseja realmente estornar/excluir esta venda?')) return;
+      sales = sales.filter(s => s.id !== id);
+      saveData();
+      renderReport();
+      showToast('Venda estornada');
+    }
+
+    function copyWhatsAppReport() {
+      const targetDate = document.getElementById('report-date').value;
+      const daySales = sales.filter(s => s.date === targetDate);
+      if (daySales.length === 0) {
+        showToast('Sem vendas nesta data para exportar');
+        return;
+      }
+
+      let grossTotal = 0, feeTotal = 0, netTotal = 0;
+      const byMethod = { DINHEIRO: 0, DEBITO: 0, CREDITO: 0 };
+
+      daySales.forEach(s => {
+        grossTotal += s.grossTotal;
+        feeTotal += s.feeAmount;
+        netTotal += s.netTotal;
+        byMethod[s.payment] += s.grossTotal;
+      });
+
+      const [y, m, d] = targetDate.split('-');
+      const text = [
+        `*FECHAMENTO DE CAIXA - ${d}/${m}/${y}*`,
+        `Vendas realizadas: ${daySales.length}`,
+        ``,
+        `💵 Dinheiro: ${formatBRL(byMethod.DINHEIRO)}`,
+        `💳 Débito: ${formatBRL(byMethod.DEBITO)}`,
+        `💳 Crédito: ${formatBRL(byMethod.CREDITO)}`,
+        ``,
+        `📊 *Total Bruto:* ${formatBRL(grossTotal)}`,
+        `📉 *Taxas Maquininha:* -${formatBRL(feeTotal)}`,
+        `✅ *LÍQUIDO REAL:* ${formatBRL(netTotal)}`
+      ].join('\n');
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Resumo copiado! Cole no WhatsApp');
+      }).catch(() => {
+        alert(text);
+      });
+    }
+
+    function exportCSV() {
+      const targetDate = document.getElementById('report-date').value;
+      const daySales = sales.filter(s => s.date === targetDate);
+      if (daySales.length === 0) {
+        showToast('Sem vendas nesta data para baixar');
+        return;
+      }
+
+      const headers = ['Data', 'Hora', 'Produto', 'Tamanho', 'Quantidade', 'Valor Unitario', 'Pagamento', 'Modalidade Taxa', 'Taxa (%)', 'Valor Bruto', 'Valor Taxa', 'Valor Liquido'];
+      const rows = daySales.map(s => [
+        s.date,
+        s.time,
+        `"${s.productName.replace(/"/g, '""')}"`,
+        s.size || '',
+        s.qty,
+        s.unitPrice.toFixed(2).replace('.', ','),
+        s.payment,
+        s.feeMode,
+        s.ratePercent.toFixed(2).replace('.', ','),
+        s.grossTotal.toFixed(2).replace('.', ','),
+        s.feeAmount.toFixed(2).replace('.', ','),
+        s.netTotal.toFixed(2).replace('.', ',')
+      ]);
+
+      const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `fechamento_${targetDate}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    /* ================= TAXAS & BACKUP ================= */
+    function loadFeeSettingsUI() {
+      document.getElementById('fee-DINHEIRO').value = String(settings.rates.DINHEIRO).replace('.', ',');
+      document.getElementById('fee-DEBITO').value = String(settings.rates.DEBITO).replace('.', ',');
+      document.getElementById('fee-CREDITO').value = String(settings.rates.CREDITO).replace('.', ',');
+      document.getElementById('default-fee-mode').value = settings.defaultMode || 'ABSORVER';
+    }
+
+    function saveFeeSettings() {
+      settings.rates.DINHEIRO = Math.max(0, parseMoneyInput(document.getElementById('fee-DINHEIRO').value) || 0);
+      settings.rates.DEBITO = Math.max(0, parseMoneyInput(document.getElementById('fee-DEBITO').value) || 0);
+      settings.rates.CREDITO = Math.max(0, parseMoneyInput(document.getElementById('fee-CREDITO').value) || 0);
+      settings.defaultMode = document.getElementById('default-fee-mode').value;
+      saveData();
+      updatePaymentRateLabels();
+      showToast('Taxas atualizadas!');
+    }
+
+    function exportBackupJSON() {
+      const backup = { products, sales, settings, exportedAt: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup_vendas_${getLocalDateISO()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (Array.isArray(data.products) && Array.isArray(data.sales)) {
+            products = data.products;
+            sales = data.sales;
+            if (data.settings) settings = data.settings;
+            saveData();
+            renderProductsList();
+            renderSaleProducts();
+            showToast('Backup restaurado com sucesso!');
+          } else {
+            showToast('Arquivo de backup inválido');
+          }
+        } catch (err) {
+          showToast('Erro ao ler arquivo');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    (function init() {
+      const today = getLocalDateISO();
+      const [y, m, d] = today.split('-');
+      document.getElementById('header-date').textContent = `${d}/${m}/${y}`;
+      document.getElementById('report-date').value = today;
+      updatePaymentRateLabels();
+      renderSaleProducts();
+      renderProductsList();
+    })();
+  </script>
+</body>
+</html>
